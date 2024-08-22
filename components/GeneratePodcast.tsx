@@ -5,11 +5,17 @@ import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { Loader } from 'lucide-react'
 import { useState } from 'react'
+import { useAction } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import {v4 as uuidv4} from 'uuid';
 
 
 const useGeneratePodcast = ({setAudio, voiceType, voicePrompt, setAudioStorageId} :GeneratePodcastProps)=>{
   //logic for podast generation
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const getPodcastAudio = useAction(api.openai.generateAudioAction)
+
   const generatePodcast = async ()=>{
     setIsGenerating(true);
 
@@ -22,11 +28,14 @@ const useGeneratePodcast = ({setAudio, voiceType, voicePrompt, setAudioStorageId
 
     try {
 
-      // const response = await getPodcastAudio({
-      //   voice: voiceType,
-      //   input: voicePrompt
-      // })
+      const response = await getPodcastAudio({
+        voice: voiceType,
+        input: voicePrompt
+      })
       
+      const blob = new Blob([response], {type:'audio/mpeg'});
+      const fileName = `podcast-${uuidv4()}.mp3`;
+      const file = new File([blob], fileName, {type: 'audio/mpeg'});
     } catch (error) {
       console.log("Error encountered while generating the podcast", error);
       //TODO: Show the error message
